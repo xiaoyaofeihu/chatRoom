@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.websocket_service.dao.MessageDao">
+    <resultMap id="BaseResultMap"
+               type="com.example.websocket_service.entity.Message">
+        <!-- WARNING - @mbg.generated -->
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="user_id" jdbcType="VARCHAR" property="userId" />
+        <result column="user_name" jdbcType="VARCHAR" property="userName" />
+        <result column="user_type" jdbcType="VARCHAR" property="userType" />
+        <result column="type" jdbcType="VARCHAR" property="type" />
+        <result column="room_id" jdbcType="VARCHAR" property="roomId" />
+        <result column="status" jdbcType="VARCHAR" property="status" />
+        <result column="content" jdbcType="VARCHAR" property="content"/>
+        <result column="created_time" jdbcType="TIMESTAMP" property="createdTime"/>
+        <result column="created_user" jdbcType="VARCHAR" property="createdUser"/>
+    </resultMap>
+    <select id="getMessages" parameterType="String" resultMap="BaseResultMap">
+        select * from config_message
+        where 1=1
+        <if test="userId != null and userId != ''">
+            AND created_user = #{userId}
+        </if>
+        order by user_id asc
+    </select>
+
+     <insert id="insert" parameterType="com.example.websocket_service.entity.Message">
+        insert into config_message
+        values (#{id},#{userId},#{userName},#{userType},#{type},#{roomId},#{status},#{content},#{createdTime},#{createdUser})
+     </insert>
+
+    <select id="getServiceList" parameterType="com.example.websocket_service.entity.form.UserServiceF" resultType="com.example.websocket_service.entity.vo.MessageRecordV">
+        select
+            id as id,
+            user_id as userId,
+            user_name as userName,
+            user_type as userType,
+            type as type,
+            room_id as roomId,
+            status as status,
+            content as content,
+            created_time as createdTime,
+            created_user as createdUser
+        from config_message
+        where 1=1
+            <if test="roomId != null and roomId != ''">
+                AND room_id = #{roomId}
+            </if>
+            <if test="userName != null and userName != ''">
+                AND created_user = #{userName}
+            </if>
+            <if test="createdTime != null and createdTime != ''">
+                AND #{createdTime} &lt;= created_time
+            </if>
+            <if test="beforeTime != null and beforeTime != ''">
+                AND created_time <![CDATA[>=]]>  DATE_SUB(#{beforeTime}, INTERVAL 2 DAY)
+            </if>
+        order by created_time DESC
+    </select>
+
+
+    <select id="getHistoryList" parameterType="com.example.websocket_service.entity.form.UserServiceF" resultType="com.example.websocket_service.entity.vo.MessageRecordV">
+        select
+            id as id,
+            user_id as userId,
+            user_name as userName,
+            user_type as userType,
+            type as type,
+            room_id as roomId,
+            status as status,
+            content as content,
+            created_time as createdTime,
+            created_user as createdUser
+        from config_message m1
+        where 1=1
+          and exists (select DISTINCT(m2.room_id) from config_message m2 where m2.user_name = #{customerName}
+              and m1.room_id = m2.room_id)
+          and m1.created_user = #{userName}
+        <if test="createdTime != null and createdTime != ''">
+            AND #{createdTime} <![CDATA[<=]]> m1.created_time
+        </if>
+        order by m1.created_time DESC
+
+
+    </select>
+
+    <update id="updateUrl">
+        update config_message set content = null
+        where type != 0 and user_id = #{userId} and content = #{url}
+    </update>
+
+    <delete id="delete" parameterType="Long">
+        delete m from config_message m where m.id = #{id}
+    </delete>
+</mapper>

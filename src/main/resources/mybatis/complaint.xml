@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.websocket_service.dao.ComplaintInfoDao">
+    <resultMap id="BaseResultMap"
+               type="com.example.websocket_service.entity.ComplaintInfo">
+        <!-- WARNING - @mbg.generated -->
+        <id column="orderNumber" jdbcType="VARCHAR" property="orderNumber" />
+        <result column="complainant" jdbcType="VARCHAR" property="complainant" />
+        <result column="complaints" jdbcType="VARCHAR" property="complaints" />
+        <result column="complaintDetails" jdbcType="VARCHAR" property="complaintDetails" />
+        <result column="state" jdbcType="BIGINT" property="state" />
+        <result column="acceptor" jdbcType="VARCHAR" property="acceptor" />
+        <result column="processingTime" jdbcType="TIMESTAMP" property="processingTime"/>
+        <result column="picture" jdbcType="VARCHAR" property="picture"/>
+        <result column="creator" jdbcType="VARCHAR" property="creator"/>
+        <result column="create_date" jdbcType="TIMESTAMP" property="createDate"/>
+        <result column="editor" jdbcType="VARCHAR" property="editor"/>
+        <result column="editor_id" jdbcType="VARCHAR" property="editorId"/>
+        <result column="editor_date" jdbcType="TIMESTAMP" property="editorDate"/>
+        <result column="complainant_id" jdbcType="VARCHAR" property="complainantId"/>
+    </resultMap>
+
+
+    <insert id="insert" parameterType="com.example.websocket_service.entity.ComplaintInfo">
+        insert into config_complaint (orderNumber,complainant,complaints,complaintDetails,state,acceptor,processingTime,picture,creator,create_date,editor,editor_id,editor_date,complainant_id)
+        values (#{orderNumber},#{complainant},#{complaints},#{complaintDetails},#{state},#{acceptor},#{processingTime},#{picture},#{creator},#{createDate},#{editor},#{editorId},#{editorDate},#{complainantId})
+    </insert>
+
+
+    <select id="selectByName" parameterType="String" resultMap="BaseResultMap">
+        select * from config_complaint
+        where 1=1
+        <if test="userName != null and userName != ''">
+            AND complainant = #{userName}
+        </if>
+        <if test="orderNumber != null and orderNumber != ''">
+            AND orderNumber = #{orderNumber}
+        </if>
+        order by create_date limit 1
+    </select>
+
+    <select id="selectById" parameterType="String" resultType="String">
+        select orderNumber from config_complaint
+        where 1=1
+        <if test="orderNumber != null and orderNumber != ''">
+            AND orderNumber = #{orderNumber}
+        </if>
+    </select>
+
+    <update id="update" >
+        update config_complaint set
+        <if test="processingTime != null and processingTime != ''">
+            processingTime = #{processingTime},
+        </if>
+        acceptor = #{acceptor},editor=#{editor},state=#{state},editor_date=#{editorDate}
+        where
+            orderNumber = #{orderNumber} and complainant = #{complainant}
+    </update>
+
+
+    <select id="selectByCreatedTime"  resultType="String">
+        select orderNumber from config_complaint
+        where 1=1
+        <if test="userName != null and userName != ''">
+            AND complainant = #{userName}
+        </if>
+        and date_add(create_date, interval 5 minute) > now()
+        limit 1
+    </select>
+</mapper>
